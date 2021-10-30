@@ -1,0 +1,19 @@
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #000000;
+    width: 50%;
+    height: 50%;
+}
+
+canvas {
+    background-color: rgb(0, 0, 0);
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 99%;
+    height: 99%;
+}
