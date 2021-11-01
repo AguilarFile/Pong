@@ -23,5 +23,6 @@ function animate() {
     ctx.fillRect(game.rightLine, p2,  game.paddleWidth, game.paddleHeight);
     game.nextFrame(0,0);
 }
-  
+
+
 animate();
