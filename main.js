@@ -10,6 +10,9 @@ user.addEventListener("mousemove", e => {
     game.p2 = game.p1
 })
 
+let oldballPos = game.ballPos;
+let oldballVel = game.ballVel;
+
 function animate() {
     requestAnimationFrame(animate);
     ctx.clearRect(0,0, 1920, 1080);
@@ -20,7 +23,17 @@ function animate() {
 
     ctx.fillRect(ballPos[0], ballPos[1], game.ballSize, game.ballSize);
     ctx.fillRect(game.paddleOffSet, p1, game.paddleWidth, game.paddleHeight);
-    ctx.fillRect(game.rightLine, p2,  game.paddleWidth, game.paddleHeight);
+    ctx.fillRect(game.rightLine + game.ballSize, p2,  game.paddleWidth, game.paddleHeight);
+
+    if (oldballPos != game.ballPos){
+        console.log(game.ballPos);
+    }
+
+    if (oldballVel != game.ballVel){
+        console.log(game.ballVel);
+    }
+
+
     game.nextFrame(0,0);
 }
 
