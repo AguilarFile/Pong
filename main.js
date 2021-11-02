@@ -1,3 +1,4 @@
+document.body.style.cursor = 'none';
 let cnv = document.getElementById("cnv");
 let ctx = cnv.getContext("2d");
 ctx.fillStyle = 'white';

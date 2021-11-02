@@ -24,6 +24,7 @@ class pongGame{
 
     wallAudio = new Audio("wallSound.wav");
     paddleAudio = new Audio("paddleSound.wav");
+    gameOver = new Audio("gameOver.wav");
 
 
     //Initializes the gameboard and returns two player types
@@ -39,11 +40,11 @@ class pongGame{
     // -10 <= a,b <= 10
     // a,b != 0
     ballReset(){
-        const maxSpeed = 100;
-        const xSpeed = ((Math.random() < 0.5)? -1 : 1) * (Math.floor(Math.random()*maxSpeed) + 1);
-        const ySpeed = ((Math.random() < 0.5)? -1 : 1) * (Math.floor(Math.random()*maxSpeed) + 1);
-        this.ballVel = [xSpeed, ySpeed];
+        const ballSpeed = 8;
+        const angle = 2*Math.PI*Math.random();
+        this.ballVel = [ballSpeed*Math.cos(angle), ballSpeed*Math.sin(angle)];
         this.ballPos = [Math.floor(this.screenWidth/2), Math.random()*(this.screenHeight - this.ballSize)]
+    
     }
 
     //parameters: p1,p2 = -1,0,1
@@ -56,6 +57,7 @@ class pongGame{
 
         //Crosses Left Boarder
         if (this.ballPos[0] < 0){
+            this.gameOver.play();
             this.scoreP2 += 1;
             this.ballReset();
             return false;
@@ -63,6 +65,7 @@ class pongGame{
         
         //Crosses Right Boarder
         if (this.ballPos[0] + this.ballSize > this.screenWidth) {
+            this.gameOver.play();
             this.scoreP1 += 1;
             this.ballReset();
             return false;
@@ -70,14 +73,14 @@ class pongGame{
 
         //Crosses Top Boarder
         if (this.ballPos[1] < 0){
-            this.ballVel =  [this.ballVel[0], Math.abs(this.ballVel[1])];
+            this.ballVel =  [this.ballVel[0], -this.ballVel[1]];
             this.ballPos = [this.ballPos[0], -this.ballPos[1]];
             this.wallAudio.play()
         }
 
         //Crosses Bottom Boarder
         if (this.ballPos[1] > this.screenHeight - this.ballSize){
-            this.ballVel =  [this.ballVel[0], - Math.abs(this.ballVel[1])];
+            this.ballVel =  [this.ballVel[0], -this.ballVel[1]];
             this.ballPos = [this.ballPos[0], 2*this.screenHeight - 2*this.ballSize - this.ballPos[1]];
             this.wallAudio.play();
         }
@@ -89,7 +92,7 @@ class pongGame{
             let intersectY = this.findIntersectY(this.ballPos, this.ballVel, this.leftLine, this.p1);
             if (intersectY != null){
                 this.paddleAudio.play()
-                this.ballPos = [this.leftLine, intersectY];
+                this.ballPos = [this.leftLine, intersectY]; 
                 this.ballVel = this.findBounceAngle(intersectY, this.p1, this.ballVel);
             }
         }
@@ -99,7 +102,7 @@ class pongGame{
             let intersectY = this.findIntersectY(this.ballPos, this.ballVel, this.rightLine  , this.p2);
             if (intersectY != null){
                 this.paddleAudio.play()
-                this.ballPos = [this.rightLine, intersectY];
+                this.ballPos = [this.rightLine, intersectY]; 
                 this.ballVel = this.findBounceAngle(intersectY, this.p2, this.ballVel);
                 this.ballVel = [-this.ballVel[0], this.ballVel[1]];
             }
@@ -120,10 +123,11 @@ class pongGame{
     //return the resulting velocity of the ball after hits the paddle at intersectionY 
     //with the given ball's velocity ballVel
     findBounceAngle(intersectY, paddlePos, ballVel){
+        const increaseInSpeed = 1/2;
         const relativeIntersectY = paddlePos + this.paddleHeight/2.0 - (intersectY + this.ballSize/2.0);
         const normRelativeIntersectionY = (relativeIntersectY/(this.paddleHeight/2.0 + this.ballSize));
         const bounceAngle = normRelativeIntersectionY * this.maxBounceAngle;
-        const ballSpeed = Math.sqrt(ballVel[0]**2 + ballVel[1]**2);
+        const ballSpeed = Math.sqrt(ballVel[0]**2 + ballVel[1]**2) + increaseInSpeed;
         return [ballSpeed*Math.cos(bounceAngle), -ballSpeed*Math.sin(bounceAngle)];
     }
 
