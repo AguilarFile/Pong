@@ -1,18 +1,23 @@
 import math
+
 import tensorflow as tf
+import numpy as np
+
 from tf_agents.environments import py_environment
 from tf_agents.specs import array_spec
+from tf_agents.trajectories import time_step as ts
 
-    
+
 #A mutable class that represents the game Pong (Atari 1972 Game) with a 1920x1080 gameboard
 class pongGameEnv(py_environment.PyEnvironment):
 
     screenWidth = 1920
     screenHeight = 1080
+    shape = (screenHeight, screenWidth)
 
     paddleHeight = 140
     paddleWidth = 25
-    paddleSpeed = 10
+    paddleSpeed = 20
     paddleOffSet = math.floor(screenWidth/10) #distance from wall to bar
     maxBounceAngle = 5/12 * math.pi
 
@@ -29,65 +34,53 @@ class pongGameEnv(py_environment.PyEnvironment):
     #Initializes the gameboard and returns two player types
     def __init__(self):
         self._action_spec = array_spec.BoundedArraySpec(
-            shape=(), dtype=np.int32, minimum=0, maximum=1, name='action')
+            shape=(), dtype=np.int32, minimum=0, maximum=2, name='action')
+        self._observation_spec = array_spec.BoundedArraySpec( 
+            shape=(self.screenHeight,self.screenWidth), dtype=np.int32, 
+            minimum=np.zeros(self.shape, dtype=np.int32), 
+            maximum = np.full(self.shape, dtype=np.int32), 
+            name='observation')
 
-        self.p1 = math.floor((self.screenHeight - self.paddleHeight)/2)
-        self.p2 = self.p1
-        self.scoreP1 = 0
-        self.scoreP2 = 0
-        self.ballReset()
+        self.p1 = self.p2 = math.floor((self.screenHeight - self.paddleHeight)/2)
+        self._episode_ended = False
+        self._reset()
     
+    def action_spec(self):
+        return self._action_spec
+
+    def observation_spec(self):
+        return self._observation_spec
+
 
     #Resets the ball to its original position and gives it a random velocity [a,b]. 
     # -10 <= a,b <= 10
     # a,b != 0
-    def ballReset(self):
+    def _reset(self):
+        self._episode_ended = False
         ballSpeed = 8
         maxStartingAngle = 5/12*math.pi
         angle = 2* maxStartingAngle*math.random() - maxStartingAngle +  (math.pi if math.random() > 0.5 else 0)
         self.ballVel = [ballSpeed*math.cos(angle), ballSpeed*math.sin(angle)]
         self.ballPos = [math.floor(self.screenWidth/2), math.random()*(self.screenHeight - self.ballSize)]
-    
-    
-
-    def frame(self):
-        frame, step  = [], 4
-        for y in range(0, self.screenHeight, step):
-            for x in range(0, self.screenWidth, step):
-                #paddle 1
-                if (self.p1 <= y and y <= self.p1 + self.paddleHeight and self.paddleOffSet <= x and x <= self.paddleOffSet + self.paddleWidth):
-                    frame.push(255)
-
-                #paddle 2
-                elif (self.p2 <= y and y <= self.p2 + self.paddleHeight and self.rightLine <= x and x <= self.rightLine + self.paddleWidth):
-                    frame.push(255)
-                
-                #b
-                elif (self.ballPos[1] <= y and  y <= self.ballPos[1] + self.ballSize and self.ballPos[0] <= x and x <= self.ballPos[0] + self.ballSize):
-                    frame.push(255)
-
-                #black space
-                else:
-                    frame.push(0)
-
-        return frame
+        
+        obs = np.zeros(self.shape, dtype = np.int32) #black canvas
+        obs[self.p1: self.p1 + self.paddleHeight + 1, self.paddleOffSet : self.paddleOffSet + self.paddleWidth + 1] = 255 #paddle 1
+        obs[self.p2: self.p2 + self.paddleHeight + 1, self.rightLine: self.rightLine + self.paddleWidth + 1] = 255 #paddle 2
+        obs[self.ballPos[1]: self.ballPos[1] + self.ballSize + 1, self.ballPos[0]: self.ballPos[0] + self.ballSize + 1] = 255 #ball
+        return ts.restart(obs, dtype = np.int32)
     
 
-    #parameters: p1,p2 = -1,0,1
-    def step(self, actionP2, actionP1 = 0, hardcoded = False):
+    #parameters: action: the left paddle's action
+    def _step(self, action):
 
-        if (hardcoded):
-            offset = math.random()*self.paddleHeight - self.paddleHeight/2
-            self.p1 += self.paddleSpeed if (self.ballPos[1] + self.ballSize/2 + offset> self.p1 + self.paddleHeight/2) else -self.paddleSpeed
-            self.p2 += actionP2 * self.paddleSpeed
-        else:
-            self.p1 += actionP1 * self.paddleSpeed
-            self.p2 += actionP2 * self.paddleSpeed
+        offset = math.random()*self.paddleHeight - self.paddleHeight/2
+        self.p1 += action * self.paddleSpeed
+        self.p2 += self.paddleSpeed if (self.ballPos[1] + self.ballSize/2 + offset> self.p2 + self.paddleHeight/2) else -self.paddleSpeed
         
 
         #Paddle vertical boundaries
         self.p1 = math.max(0, self.p1)
-        self.p1 = math.min(self.screenHeight, self.p1)
+        self.p1 = math.min(self.screenHeight - self.paddleHeight, self.p1)
 
         self.p2 = math.max(0, self.p2)
         self.p2 = math.min(self.screenHeight - self.paddleHeight, self.p2)
@@ -185,5 +178,6 @@ class pongGameEnv(py_environment.PyEnvironment):
         return self.p2
     
 
-
+x = pongGameEnv()
+print(x._action_spec)
 

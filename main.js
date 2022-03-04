@@ -3,11 +3,29 @@ let cnv = document.getElementById("cnv");
 let ctx = cnv.getContext("2d");
 ctx.fillStyle = 'white';
 const user = document.querySelector("body");
-const game = new pongGame();
+const game = new pongGameEnv();
 
-user.addEventListener("mousemove", e => {
-    game.p2 = e.pageY || e.clientY;
-})
+
+/*
+user.addEventListener("keydown", function(event)  {
+    if (event.defaultPrevented) {
+        return; // Do nothing if event already handled
+      }
+
+    switch (event.code) {
+        case "ArrowDown":
+            game.p2 += 2*game.paddleSpeed;
+            break;
+        case "ArrowUp":
+            game.p2 -= game.paddleSpeed;
+            break;
+   }
+   event.preventDefault();
+}, true);
+*/
+//One solution would be to just continuously run the move function in a loop until keyup happens: 
+// https://stackoverflow.com/questions/29279805/keydown-doesnt-continuously-fire-when-pressed-and-hold
+// DO NOT WORK ON THIS - WASTE OF TIME
 
 let oldballPos = game.ballPos;
 let oldballVel = game.ballVel;

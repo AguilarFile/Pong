@@ -6,7 +6,7 @@ class pongGameEnv{
 
     paddleHeight = 140;
     paddleWidth = 25;
-    paddleSpeed = 10;
+    paddleSpeed = 20;
     paddleOffSet = Math.floor(this.screenWidth/10); //distance from wall to bar
     maxBounceAngle = 5/12 * Math.PI;
 
@@ -93,7 +93,7 @@ class pongGameEnv{
 
         //Paddle vertical boundaries
         this.p1 = Math.max(0, this.p1);
-        this.p1 = Math.min(this.screenHeight, this.p1);
+        this.p1 = Math.min(this.screenHeight - this.paddleHeight, this.p1);
 
         this.p2 = Math.max(0, this.p2);
         this.p2 = Math.min(this.screenHeight - this.paddleHeight, this.p2);
