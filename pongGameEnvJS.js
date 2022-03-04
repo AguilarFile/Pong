@@ -1,13 +1,13 @@
 //A mutable class that represents the game Pong (Atari 1972 Game) with a 1920x1080 gameboard
-class pongGame{
+class pongGameEnv{
 
-    screenWidth = 1920
-    screenHeight = 1080
+    screenWidth = 1920;
+    screenHeight = 1080;
 
-    paddleHeight = 150;
-    paddleWidth = 20;
-    paddleSpeed = 1;
-    paddleOffSet = Math.floor(this.screenWidth/10) //distance from wall to bar
+    paddleHeight = 140;
+    paddleWidth = 25;
+    paddleSpeed = 10;
+    paddleOffSet = Math.floor(this.screenWidth/10); //distance from wall to bar
     maxBounceAngle = 5/12 * Math.PI;
 
     ballSize = 21;
@@ -41,17 +41,64 @@ class pongGame{
     // a,b != 0
     ballReset(){
         const ballSpeed = 8;
-        const angle = 2*Math.PI*Math.random();
+        const maxStartingAngle = 5/12*Math.PI
+        let angle = 2*maxStartingAngle*Math.random() - maxStartingAngle + ((Math.random() > 0.5)? Math.PI: 0);
         this.ballVel = [ballSpeed*Math.cos(angle), ballSpeed*Math.sin(angle)];
         this.ballPos = [Math.floor(this.screenWidth/2), Math.random()*(this.screenHeight - this.ballSize)]
     
     }
 
-    //parameters: p1,p2 = -1,0,1
-    nextFrame(actionP1, actionP2) { 
+    frame(){
+        const frame  = [];
+        for (let y = 0; y < this.screenHeight; y = y + 4 ){
+            for (let x = 0; x < this.screenWidth; x = x + 4){
 
-        this.p1 += actionP1 * this.paddleSpeed; //Fix bounded error
-        this.p2 += actionP2 * this.paddleSpeed;
+                //paddle 1
+                if (this.p1 <= y && y <= this.p1 + this.paddleHeight && this.paddleOffSet <= x && x <= this.paddleOffSet + this.paddleWidth){
+                    frame.push(255);
+                }
+
+                //paddle 2
+                else if (this.p2 <= y && y <= this.p2 + this.paddleHeight && this.rightLine <= x && x <= this.rightLine + this.paddleWidth){
+                    frame.push(255);
+                }
+                //ball
+                else if (this.ballPos[1] <= y &&  y <= this.ballPos[1] + this.ballSize && this.ballPos[0] <= x && x <= this.ballPos[0] + this.ballSize){
+                    frame.push(255);
+                }
+
+                //black space
+                else {
+                    frame.push(0);
+                }
+
+            }
+        }
+
+        return frame;
+    }
+
+    //parameters: p1,p2 = -1,0,1
+    step( actionP2, actionP1 = 0, hardcoded = false) { 
+
+        if (hardcoded){
+            const offset = Math.random()*this.paddleHeight - this.paddleHeight/2;
+
+            this.p1 += (this.ballPos[1] + this.ballSize/2 + offset> this.p1 + this.paddleHeight/2)? this.paddleSpeed: -this.paddleSpeed;
+            this.p2 += actionP2 * this.paddleSpeed;
+        } else{
+            this.p1 += actionP1 * this.paddleSpeed;
+            this.p2 += actionP2 * this.paddleSpeed;
+        }
+
+        //Paddle vertical boundaries
+        this.p1 = Math.max(0, this.p1);
+        this.p1 = Math.min(this.screenHeight, this.p1);
+
+        this.p2 = Math.max(0, this.p2);
+        this.p2 = Math.min(this.screenHeight - this.paddleHeight, this.p2);
+
+
         this.ballPos[0] += this.ballVel[0];
         this.ballPos[1] += this.ballVel[1];
 
@@ -107,6 +154,7 @@ class pongGame{
                 this.ballVel = [-this.ballVel[0], this.ballVel[1]];
             }
         }
+        return this.frame();
 
     }
 

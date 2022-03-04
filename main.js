@@ -4,11 +4,9 @@ let ctx = cnv.getContext("2d");
 ctx.fillStyle = 'white';
 const user = document.querySelector("body");
 const game = new pongGame();
+
 user.addEventListener("mousemove", e => {
-    console.log(e);
-    console.log(e.pageY || e.clientY)
-    game.p1 = e.pageY || e.clientY;
-    game.p2 = game.p1
+    game.p2 = e.pageY || e.clientY;
 })
 
 let oldballPos = game.ballPos;
@@ -26,16 +24,17 @@ function animate() {
     ctx.fillRect(game.paddleOffSet, p1, game.paddleWidth, game.paddleHeight);
     ctx.fillRect(game.rightLine + game.ballSize, p2,  game.paddleWidth, game.paddleHeight);
 
-    if (oldballPos != game.ballPos){
-        console.log(game.ballPos);
-    }
+    game.step(0,0, true)
 
-    if (oldballVel != game.ballVel){
-        console.log(game.ballVel);
-    }
-
-
-    game.nextFrame(0,0);
+    // let frame = game.step(0,0, true);
+    // for (let y = 0; y < game.screenHeight; y++){
+    //     for (let x = 0; x < game.screenWidth; x++){
+    //         paint = frame[y*game.screenWidth + x]
+    //         if (paint != 0){
+    //             ctx.fillRect(x,y,1,1);
+    //         }
+    //     }
+    // }
 }
 
 

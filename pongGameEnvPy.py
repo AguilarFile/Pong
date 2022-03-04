@@ -1,7 +1,11 @@
 import math
+import tensorflow as tf
+from tf_agents.environments import py_environment
+from tf_agents.specs import array_spec
+
     
 #A mutable class that represents the game Pong (Atari 1972 Game) with a 1920x1080 gameboard
-class pongGameEnv:
+class pongGameEnv(py_environment.PyEnvironment):
 
     screenWidth = 1920
     screenHeight = 1080
@@ -24,6 +28,9 @@ class pongGameEnv:
 
     #Initializes the gameboard and returns two player types
     def __init__(self):
+        self._action_spec = array_spec.BoundedArraySpec(
+            shape=(), dtype=np.int32, minimum=0, maximum=1, name='action')
+
         self.p1 = math.floor((self.screenHeight - self.paddleHeight)/2)
         self.p2 = self.p1
         self.scoreP1 = 0
