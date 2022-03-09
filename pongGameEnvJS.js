@@ -102,22 +102,6 @@ class pongGameEnv{
         this.ballPos[0] += this.ballVel[0];
         this.ballPos[1] += this.ballVel[1];
 
-        //Crosses Left Boarder
-        if (this.ballPos[0] < 0){
-            this.gameOver.play();
-            this.scoreP2 += 1;
-            this.ballReset();
-            return false;
-        }
-        
-        //Crosses Right Boarder
-        if (this.ballPos[0] + this.ballSize > this.screenWidth) {
-            this.gameOver.play();
-            this.scoreP1 += 1;
-            this.ballReset();
-            return false;
-        }
-
         //Crosses Top Boarder
         if (this.ballPos[1] < 0){
             this.ballVel =  [this.ballVel[0], -this.ballVel[1]];
@@ -154,7 +138,22 @@ class pongGameEnv{
                 this.ballVel = [-this.ballVel[0], this.ballVel[1]];
             }
         }
-        return this.frame();
+
+        //Crosses Left Boarder
+        if (this.ballPos[0] < 0){
+            this.gameOver.play();
+            this.scoreP2 += 1;
+            this.ballReset();
+            return false;
+        }
+        
+        //Crosses Right Boarder
+        if (this.ballPos[0] + this.ballSize > this.screenWidth) {
+            this.gameOver.play();
+            this.scoreP1 += 1;
+            this.ballReset();
+            return false;
+        }
 
     }
 

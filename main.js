@@ -5,7 +5,9 @@ ctx.fillStyle = 'white';
 const user = document.querySelector("body");
 const game = new pongGameEnv();
 
-
+user.addEventListener("mousemove", e => {
+    game.p2 = e.pageY || e.clientY;
+})
 /*
 user.addEventListener("keydown", function(event)  {
     if (event.defaultPrevented) {
