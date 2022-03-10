@@ -1,5 +1,6 @@
 import math
 import random
+import gym
 
 import abc
 import tensorflow as tf
@@ -9,9 +10,11 @@ from tf_agents.environments import py_environment
 from tf_agents.specs import array_spec
 from tf_agents.trajectories import time_step as ts
 
+from gym import spaces
+
 
 #A mutable class that represents the game Pong (Atari 1972 Game) with a 1920x1080 gameboard
-class pongGameEnv(py_environment.PyEnvironment):
+class PongEnv(gym.Env):
 
     screenWidth = 1920
     screenHeight = 1080
@@ -35,12 +38,13 @@ class pongGameEnv(py_environment.PyEnvironment):
 
     #Initializes the gameboard and returns two player types
     def __init__(self):
+
         self._action_spec = array_spec.BoundedArraySpec(
             shape=(), dtype=np.int32, minimum=0, maximum=2, name='action')
-        self._observation_spec = array_spec.BoundedArraySpec( 
-            shape=(self.screenHeight,self.screenWidth), dtype=np.float32, 
-            minimum=np.zeros(self.shape, dtype=np.float32), 
-            maximum = np.full(self.shape, 255., dtype=np.float32), 
+        self._observation_spec = array_spec.BoundedArraySpec(
+            shape=(self.screenHeight,self.screenWidth), dtype=np.float32,
+            minimum=np.zeros(self.shape, dtype=np.float32),
+            maximum = np.full(self.shape, 255., dtype=np.float32),
             name='observation')
         
         self._current_time_step = None
@@ -170,4 +174,3 @@ class pongGameEnv(py_environment.PyEnvironment):
         obs[self.p2: self.p2 + self.paddleHeight + 1, self.rightLine: self.rightLine + self.paddleWidth + 1] = 255. #paddle 2
         obs[yBall: yBall + self.ballSize + 1, xBall: xBall + self.ballSize + 1] = 255. #ball
         return obs
-
