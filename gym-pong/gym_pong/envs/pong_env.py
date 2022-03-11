@@ -11,6 +11,8 @@ from tf_agents.specs import array_spec
 from tf_agents.trajectories import time_step as ts
 
 from gym import spaces
+from ale_py._ale_py import ALEInterface, ALEState, Action, LoggerMode
+
 
 
 #A mutable class that represents the game Pong (Atari 1972 Game) with a 1920x1080 gameboard
@@ -18,7 +20,7 @@ class PongEnv(gym.Env):
 
     screenWidth = 1920
     screenHeight = 1080
-    shape = (screenHeight, screenWidth)
+    shape = (screenHeight, screenWidth, 1)
 
     paddleHeight = 140
     paddleWidth = 25
@@ -38,18 +40,13 @@ class PongEnv(gym.Env):
 
     #Initializes the gameboard and returns two player types
     def __init__(self):
-
-        self._action_spec = array_spec.BoundedArraySpec(
-            shape=(), dtype=np.int32, minimum=0, maximum=2, name='action')
-        self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(self.screenHeight,self.screenWidth), dtype=np.float32,
-            minimum=np.zeros(self.shape, dtype=np.float32),
-            maximum = np.full(self.shape, 255., dtype=np.float32),
-            name='observation')
+        self.action_space = spaces.Discrete(3)
+        self.observation_space = spaces.Box(low = 0., high = 255., shape = self.shape, dtype=np.float32)
         
+        self.ale = ALEInterface()
         self._current_time_step = None
         self._episode_ended = False
-        self._reset()
+        self.reset()
 
     def observation_spec(self):
         return self._observation_spec
@@ -60,25 +57,24 @@ class PongEnv(gym.Env):
     #Resets the ball to its original position and gives it a random velocity [a,b]. 
     # -10 <= a,b <= 10
     # a,b != 0
-    def _reset(self):
+    def reset(self):
         self._episode_ended = False
         self.p1 = math.floor((self.screenHeight - self.paddleHeight)*random.random())
         self.p2 = math.floor((self.screenHeight - self.paddleHeight)*random.random())
 
-        ballSpeed = 8
+        ballSpeed = 10
         maxStartingAngle = 5/12*math.pi
         angle = 2* maxStartingAngle* random.random() - maxStartingAngle +  (math.pi if random.random() > 0.5 else 0)
         self.ballVel = [ballSpeed*math.cos(angle), ballSpeed*math.sin(angle)]
         self.ballPos = [math.floor(self.screenWidth/2), math.floor(random.random()*(self.screenHeight - self.ballSize))] #[x,y] #math.floor
 
-        return ts.restart(self.getObs())
+        return self.getObs()
 
     #parameters: action: the left paddle's action
-    #action: 0 = up , 1 = remain, 2 = down
-    def _step(self, action):
-
+    #action: 0 = down , 1 = remain, 2 = up
+    def step(self, action):
         if self._episode_ended:
-            return self.reset()
+            return self._reset()
 
         action = 1 - action
 
@@ -134,17 +130,19 @@ class PongEnv(gym.Env):
         if (self.ballPos[0] < 0):
             self._episode_ended = True
             reward = -100
-            return ts.termination(np.array(self.getObs(), dtype=np.float32), reward)
+            return self.getObs(), -100, True, {} #ts.termination(np.array(self.getObs(), dtype=np.float32), reward)
         
         
         #Crosses Right Boarder
         if (self.ballPos[0] + self.ballSize > self.screenWidth) :
             self._episode_ended = True
-            reward = 100
-            return ts.termination(np.array(self.getObs(), dtype=np.float32), reward)
+            return  self.getObs(), 100, True, {} #ts.termination(np.array(self.getObs(), dtype=np.float32), reward)
 
-        return ts.transition(np.array(self.getObs(), dtype=np.float32), reward=0.0, discount=1.0)
+        return self.getObs(), 0, False, {} #ts.transition(np.array(self.getObs(), dtype=np.float32), reward=0.0, discount=1.0)
 
+    def render(self, mode = "rgb_array"):
+        if mode == "rgb_array":
+            return self.getObs()
     
 
     #With the line created from ballPos and ballVos, determine the intersection between 
@@ -169,8 +167,9 @@ class PongEnv(gym.Env):
 
     def getObs(self):
         xBall, yBall = math.floor(self.ballPos[0]), math.floor(self.ballPos[1])
+
         obs = np.zeros(self.shape, dtype = np.float32) #black canvas
-        obs[self.p1: self.p1 + self.paddleHeight + 1, self.paddleOffSet : self.paddleOffSet + self.paddleWidth + 1] = 255. #paddle 1
-        obs[self.p2: self.p2 + self.paddleHeight + 1, self.rightLine: self.rightLine + self.paddleWidth + 1] = 255. #paddle 2
-        obs[yBall: yBall + self.ballSize + 1, xBall: xBall + self.ballSize + 1] = 255. #ball
+        obs[self.p1: self.p1 + self.paddleHeight + 1, self.paddleOffSet : self.paddleOffSet + self.paddleWidth + 1,0] = 255. #paddle 1
+        obs[self.p2: self.p2 + self.paddleHeight + 1, self.rightLine: self.rightLine + self.paddleWidth + 1,0] = 255. #paddle 2
+        obs[yBall: yBall + self.ballSize + 1, xBall: xBall + self.ballSize + 1,0] = 255. #ball
         return obs

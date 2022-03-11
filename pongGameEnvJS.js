@@ -40,7 +40,7 @@ class pongGameEnv{
     // -10 <= a,b <= 10
     // a,b != 0
     ballReset(){
-        const ballSpeed = 8;
+        const ballSpeed = 10;
         const maxStartingAngle = 5/12*Math.PI
         let angle = 2*maxStartingAngle*Math.random() - maxStartingAngle + ((Math.random() > 0.5)? Math.PI: 0);
         this.ballVel = [ballSpeed*Math.cos(angle), ballSpeed*Math.sin(angle)];
@@ -48,35 +48,6 @@ class pongGameEnv{
     
     }
 
-    frame(){
-        const frame  = [];
-        for (let y = 0; y < this.screenHeight; y = y + 4 ){
-            for (let x = 0; x < this.screenWidth; x = x + 4){
-
-                //paddle 1
-                if (this.p1 <= y && y <= this.p1 + this.paddleHeight && this.paddleOffSet <= x && x <= this.paddleOffSet + this.paddleWidth){
-                    frame.push(255);
-                }
-
-                //paddle 2
-                else if (this.p2 <= y && y <= this.p2 + this.paddleHeight && this.rightLine <= x && x <= this.rightLine + this.paddleWidth){
-                    frame.push(255);
-                }
-                //ball
-                else if (this.ballPos[1] <= y &&  y <= this.ballPos[1] + this.ballSize && this.ballPos[0] <= x && x <= this.ballPos[0] + this.ballSize){
-                    frame.push(255);
-                }
-
-                //black space
-                else {
-                    frame.push(0);
-                }
-
-            }
-        }
-
-        return frame;
-    }
 
     //parameters: p1,p2 = -1,0,1
     step( actionP2, actionP1 = 0, hardcoded = false) { 
